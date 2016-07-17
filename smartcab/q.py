@@ -1,3 +1,5 @@
+import random
+
 class QTable(object):
     def __init__(self):
         self.table = dict()
@@ -18,7 +20,7 @@ class QLearning(object):
         self.epsilon = epsilon
         self.possible_actions = [None, 'forward', 'left', 'right']
 
-    def getAction(self, state):
+    def act(self, state):
         if random.random() < self.epsilon:
             action = random.choice(self.possible_actions)
         else:
@@ -27,11 +29,11 @@ class QLearning(object):
 
             if q.count(max_q) > 1:
                 best_actions = [i for i in range(len(self.possible_actions)) if q[i] == max_q]
-                action_id = random.choice(best_action)
+                action_id = random.choice(best_actions)
             else:
                 action_id = q.index(max_q)
 
-            action = self.possible_actions(action_id)
+            action = self.possible_actions[action_id]
 
         return action
 

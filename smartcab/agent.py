@@ -2,6 +2,7 @@ import random
 from environment import Agent, Environment
 from planner import RoutePlanner
 from simulator import Simulator
+from q import QLearning
 
 class LearningAgent(Agent):
     """An agent that learns to drive in the smartcab world."""
@@ -11,6 +12,8 @@ class LearningAgent(Agent):
         self.color = 'red'  # override color
         self.planner = RoutePlanner(self.env, self)  # simple route planner to get next_waypoint
         # TODO: Initialize any additional variables here
+        self.qLearning = QLearning(alpha=0.1, gamma=0.9, epsilon=0.1)
+        print self.qLearning
 
     def reset(self, destination=None):
         self.planner.route_to(destination)
@@ -23,17 +26,22 @@ class LearningAgent(Agent):
         deadline = self.env.get_deadline(self)
 
         # TODO: Update state
-        self.state = [inputs['light'], inputs['oncoming'],
-            inputs['left'], self.next_waypoint]
-
+        self.state = (inputs['light'], inputs['oncoming'],
+            inputs['left'], self.next_waypoint)
 
         # TODO: Select action according to your policy
-        action = random.choice([None, 'forward', 'left', 'right'])
+        print self.state
+        action = self.qLearning.act(self.state)
 
         # Execute action and get reward
         reward = self.env.act(self, action)
 
         # TODO: Learn policy based on state, action, reward
+        next_inputs = self.env.sense(self)
+        next_state = (next_inputs['light'], next_inputs['oncoming'],
+            next_inputs['left'], self.next_waypoint)
+
+        self.qLearning.learn(self.state, action, reward, next_state)
 
         print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, reward = {}".format(deadline, inputs, action, reward)  # [debug]
 
@@ -44,7 +52,7 @@ def run():
     # Set up environment and agent
     e = Environment()  # create environment (also adds some dummy traffic)
     a = e.create_agent(LearningAgent)  # create agent
-    e.set_primary_agent(a, enforce_deadline=False)  # specify agent to track
+    e.set_primary_agent(a, enforce_deadline=True)  # specify agent to track
     # NOTE: You can set enforce_deadline=False while debugging to allow longer trials
 
     # Now simulate it
