@@ -24,7 +24,7 @@ class LearningAgent(Agent):
 
         # TODO: Update state
         self.state = [inputs['light'], inputs['oncoming'],
-            inputs['left'], deadline, self.next_waypoint]
+            inputs['left'], self.next_waypoint]
 
 
         # TODO: Select action according to your policy
